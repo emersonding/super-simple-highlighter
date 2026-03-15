@@ -1,5 +1,5 @@
 {
-	"manifest_version": 2,
+	"manifest_version": 3,
 	"name": "__MSG_extension_name__",
 	"version": "4.0.3",
 	"default_locale": "en",
@@ -15,35 +15,17 @@
 		"128": "static/images/128.png",
 		"256": "static/images/256.png"
 	},
-	"page_action": {
+	"action": {
 		"default_popup": "popup.html",
 		"default_title": "__MSG_page_action_default_title__",
 		"default_icon": {
-			"19": "static/images/19.png",
-			"38": "static/images/38.png"
+			"16": "static/images/16.png",
+			"32": "static/images/32.png"
 		}
 	},
 	"author": "__MSG_extension_author__",
 	"background": {
-		"scripts": [
-			"static/js/pouchdb-6.4.3.min.js",
-			"static/js/pouchdb.replication-stream.min.js",
-			"static/js/pouchdb.load.min.js",
-			"js/shared/db.js",
-			"js/shared/highlighter.js",
-			"js/shared/chrome_tabs.js",
-			"js/shared/chrome_storage.js",
-			"js/shared/chrome_highlight_storage.js",
-			"js/shared/utils.js",
-			"js/background/chrome_page_action.js",
-			"js/background/chrome_context_menus_handler.js",
-			"js/background/chrome_runtime_handler.js",
-			"js/background/chrome_storage_handler.js",
-			"js/background/chrome_commands_handler.js",
-			"js/background/chrome_web_navigation_handler.js",
-			"js/background/main.js"
-		],
-		"persistent": false
+		"service_worker": "js/background/main.js"
 	},
 	"commands": {
 		"apply_highlight.0": {
@@ -83,16 +65,18 @@
 			"description": "Remove highlight under cursor"
 		}
 	},
-	"content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
 	"options_page": "options.html",
 	"permissions": [
 		"clipboardWrite",
 		"tts",
 		"storage",
+		"scripting",
 		"contextMenus",
 		"unlimitedStorage",
 		"webNavigation",
-		"tabs",
+		"tabs"
+	],
+	"host_permissions": [
 		"<all_urls>"
 	]
 }

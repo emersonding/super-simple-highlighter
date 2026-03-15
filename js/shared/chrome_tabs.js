@@ -140,7 +140,7 @@ class ChromeTabs {
 
   /**
    * @typedef {Object} ExecuteScriptDetails
-   * @prop {boolean} [allFrames=false] - If true implies that the JavaScript or CSS should be injected into all frames of current page
+   * @prop {boolean} [allFrames=false] - If true implies that the JavaScript should be injected into all frames of current page
    */
 
   /**
@@ -165,16 +165,52 @@ class ChromeTabs {
     return new Promise((resolve, reject) => {
       // console.log(`Executing scripts: ${files}`)
 
-      chrome.tabs.executeScript(
-        this.tabId,
-        Object.assign({file: files}, details), 
-        result => { 
+      chrome.scripting.executeScript(
+        {
+          files: [files],
+          target: {
+            tabId: this.tabId,
+            allFrames: details.allFrames === true,
+          },
+        },
+        result => {
           if (chrome.runtime.lastError) {
             reject(new Error(chrome.runtime.lastError.message))
             return
           }
 
           resolve(result)
+        }
+      )
+    })
+  }
+
+  /**
+   * Shows a simple alert dialog in the tab context.
+   *
+   * @param {string} message
+   * @returns {Promise}
+   * @memberof ChromeTabs
+   */
+  alert(message) {
+    return new Promise((resolve, reject) => {
+      chrome.scripting.executeScript(
+        {
+          target: {
+            tabId: this.tabId,
+          },
+          func: alertMessage => {
+            window.alert(alertMessage)
+          },
+          args: [message],
+        },
+        () => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message))
+            return
+          }
+
+          resolve()
         }
       )
     })

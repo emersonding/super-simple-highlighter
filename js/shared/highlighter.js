@@ -98,8 +98,8 @@ class Highlighter {
         })
       }
 
-      // (re) show page action on success
-      chrome.pageAction.show(tabs.tabId)
+      // (re) enable the toolbar action on success
+      chrome.action.enable(tabs.tabId)
     })
     
     // .then(() => {
@@ -213,7 +213,7 @@ class Highlighter {
       console.log(`Removing all documents for ${match}`);
 
       for (const id of tabIds) {
-        chrome.pageAction.hide(id)
+        chrome.action.disable(id)
       }
 
       // can delete all documents (for this match)
@@ -233,7 +233,7 @@ class Highlighter {
     return new DB().removeMatchingDocuments(match).then(responses => {
       const tabs = new ChromeTabs((typeof this.tabId === 'number' && this.tabId) || this.tabId[0])
 
-      chrome.pageAction.hide(tabs.tabId)
+      chrome.action.disable(tabs.tabId)
 
       // Response is an array containing the id and rev of each deleted document.
       // We can use id to remove highlights in the DOM (although some won't match)

@@ -15,6 +15,24 @@
  * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+importScripts(
+  "../../static/js/pouchdb-6.4.3.min.js",
+  "../../static/js/pouchdb.replication-stream.min.js",
+  "../../static/js/pouchdb.load.min.js",
+  "../shared/db.js",
+  "../shared/highlighter.js",
+  "../shared/chrome_tabs.js",
+  "../shared/chrome_storage.js",
+  "../shared/chrome_highlight_storage.js",
+  "../shared/utils.js",
+  "./chrome_page_action.js",
+  "./chrome_context_menus_handler.js",
+  "./chrome_runtime_handler.js",
+  "./chrome_storage_handler.js",
+  "./chrome_commands_handler.js",
+  "./chrome_web_navigation_handler.js"
+)
+
 // listeners
 
 ChromeRuntimeHandler.addListeners()
@@ -22,6 +40,8 @@ ChromeStorageHandler.addListeners()
 ChromeCommandsHandler.addListeners()
 ChromeWebNavigationHandler.addListeners()
 ChromeContextMenusHandler.addListeners()
+
+chrome.action.disable()
 
 // constant menus
 

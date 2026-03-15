@@ -32,7 +32,7 @@ class ChromeContextMenusHandler {
   }
 
   /**
-   * Create (or recreate) the page action menu
+   * Create (or recreate) the action menu
    * 
    * @static
    * @param {Object} options [{containsHighlights=false}={}] 
@@ -42,7 +42,7 @@ class ChromeContextMenusHandler {
   static createPageActionMenu({containsHighlights = false} = {}) {
     // @ts-ignore
     return ChromeContextMenusHandler.remove(Object.values(ChromeContextMenusHandler.ID.PAGE_ACTION)).then(() => {
-      const template = { contexts: ['page_action'] },
+      const template = { contexts: ['action'] },
         items = [{
           id: ChromeContextMenusHandler.ID.PAGE_ACTION.OPEN_BOOKMARKS,
           title: chrome.i18n.getMessage("bookmarks"),
@@ -210,7 +210,7 @@ class ChromeContextMenusHandler {
    */
   static onClicked(info, tab) {
     switch (info.menuItemId) {
-      case ChromeContextMenusHandler.ID.SELECTION.OPEN_BOOKMARKS:
+      case ChromeContextMenusHandler.ID.PAGE_ACTION.OPEN_BOOKMARKS:
         return ChromeTabs.create({ 
           openerTabId: tab.id,
           url: 'options.html#bookmarks'
@@ -226,21 +226,19 @@ class ChromeContextMenusHandler {
 
         switch (match[1]) {
           case ChromeContextMenusHandler.ID.SELECTION.CREATE_HIGHLIGHT:
+            const tabs = new ChromeTabs(tab.id)
+
             // states in which a highlight can't be created
             if (info.editable) {
-              window.alert(chrome.i18n.getMessage("alert_create_highlight_in_editable"))
-              break
+              return tabs.alert(chrome.i18n.getMessage("alert_create_highlight_in_editable"))
             }
 
             // can't create highlight in frames that aren't top level frames, or in editable textareas
             if (info.frameUrl && info.frameUrl !== tab.url){
-              window.alert(chrome.i18n.getMessage("alert_create_highlight_in_subframe"))
-              break
+              return tabs.alert(chrome.i18n.getMessage("alert_create_highlight_in_subframe"))
             }
 
             // get the selection range (_xpath) from content script
-            const tabs = new ChromeTabs(tab.id)
-            
             // highlight definition class name
             const className = match[2]
             
