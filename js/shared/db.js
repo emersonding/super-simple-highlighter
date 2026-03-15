@@ -248,6 +248,28 @@ class DB {
   }
 
   /**
+   * Get storage estimate for the extension's origin
+   *
+   * @returns {Promise<{usage: number, quota: number}>}
+   * @memberof DB
+   */
+  getStorageEstimate() {
+    return navigator.storage.estimate()
+  }
+
+  /**
+   * Run full database optimization: remove superfluous docs, compact, and clean up views
+   *
+   * @returns {Promise}
+   * @memberof DB
+   */
+  optimizeDB() {
+    return this.removeAllSuperfluousDocuments()
+      .then(() => this.compactDB())
+      .then(() => this.viewCleanupDB())
+  }
+
+  /**
    * Dump PouchDB to a stream object (with replication stream plugin)
    * 
    * @param {Object} stream 
