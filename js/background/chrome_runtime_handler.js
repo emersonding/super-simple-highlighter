@@ -140,5 +140,5 @@ class ChromeRuntimeHandler {
 ChromeRuntimeHandler.MESSAGE = {
   DELETE_HIGHLIGHT: 'delete_highlight',
   CREATE_HIGHLIGHT_FROM_PAGE: 'create_highlight_from_page',
-  UPDATE_HIGHLIGHT_COMMENT:   'update_highlight_comment',
+  UPDATE_HIGHLIGHT_COMMENT: 'update_highlight_comment',
 }
