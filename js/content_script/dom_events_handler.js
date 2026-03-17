@@ -137,6 +137,7 @@ class DOMEventsHandler {
     let closeElm = /** @type {HTMLButtonElement} */ (firstElm.querySelector(`.${StyleSheetManager.CLASS_NAME.CLOSE}`))
     
     if (!closeElm) {
+      this._hideCommentTooltip()
       return
     }
 
