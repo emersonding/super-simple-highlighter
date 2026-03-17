@@ -87,7 +87,7 @@ class Highlighter {
 
       // use the new document's id for the element id of the (first) highlight element
       try {
-        return tabs.createHighlight(xrange, className, doc.id)
+        return tabs.createHighlight(xrange, className, doc.id, undefined, comment)
       } catch (e) {
         // always rejects
         return db.removeDB(doc.id, doc.rev).then(() => {
