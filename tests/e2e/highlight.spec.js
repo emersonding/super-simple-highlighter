@@ -54,6 +54,7 @@ test.afterAll(async () => {
   if (server) server.close()
 })
 
+// Verifies the options page can render the Advanced tab's storage usage UI for the extension database.
 test('options page advanced tab displays database storage size', async () => {
   // Get extension ID from service worker URL
   const extId = sw.url().split('/')[2]
@@ -77,6 +78,7 @@ test('options page advanced tab displays database storage size', async () => {
   await page.close()
 })
 
+// Verifies a selected text range is highlighted through the extension flow and restored after a page reload.
 test('highlight creates mark elements and persists after reload', async () => {
   const pageUrl = `http://127.0.0.1:${port}/test-page.html`
   const page = await context.newPage()

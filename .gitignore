@@ -10,3 +10,5 @@ gha-creds-*.json
 .claude/
 node_modules/
 test-results/
+
+.idea/
