@@ -106,6 +106,7 @@ class Highlighter {
 
       // (re) enable the toolbar action on success
       chrome.action.enable(tabs.tabId)
+      return doc.id
     })
     
     // .then(() => {
