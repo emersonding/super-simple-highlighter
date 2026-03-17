@@ -300,8 +300,9 @@ class ChromeTabs {
    * @param {string} className - name of class defining style of highlight
    * @param {string} highlightId - unique id for highlight, usually same as 'create' document's Id
    * @param {number} [version] - 'version' of document used to create tab. If < 4, assumes compat behaviour
+   * @param {string} [comment] - optional comment text attached to the highlight
    * @param {MessageOptions} [options] - message options
-   * @returns {Promise<boolean>} true if highlight span could be created 
+   * @returns {Promise<boolean>} true if highlight span could be created
    * @memberof ChromeTabs
    */
   createHighlight(range, className, highlightId, version, comment, options) {
@@ -485,8 +486,8 @@ class ChromeTabs {
    */
   setHighlightComment(highlightId, comment, options) {
     return this.sendMessage(ChromeTabs.MESSAGE_ID.SET_HIGHLIGHT_COMMENT, {
-      highlightId,
-      comment,
+      highlightId: highlightId,
+      comment: comment,
     }, options)
   }
 
