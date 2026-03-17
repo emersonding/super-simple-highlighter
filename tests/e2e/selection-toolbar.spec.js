@@ -59,6 +59,9 @@ async function setupPage() {
     if (tab) await new ChromeTabs(tab.id).sendMessage('ping', {}, { ping: false }).catch(() => {})
   }, pageUrl)
 
+  // Wait for SelectionToolbar's _resolveActiveClassName() storage read to complete
+  await page.waitForTimeout(300)
+
   return { page, pageUrl }
 }
 
