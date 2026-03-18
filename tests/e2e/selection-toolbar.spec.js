@@ -98,6 +98,32 @@ test('toolbar appears above selection when text is selected', async () => {
   await page.close()
 })
 
+test('clicking search button opens Google for the selected text and dismisses toolbar', async () => {
+  const { page } = await setupPage()
+  await selectText(page)
+  await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
+
+  const firstButtonClass = await page.$eval('.ssh-toolbar-root button:first-of-type', el => el.className)
+  expect(firstButtonClass).toBe('ssh-toolbar-search')
+
+  const popupPromise = page.waitForEvent('popup')
+  await page.click('.ssh-toolbar-search')
+  const popup = await popupPromise
+  await popup.waitForLoadState('domcontentloaded')
+
+  const popupUrl = new URL(popup.url())
+  const searchTarget = popupUrl.searchParams.get('continue') || popup.url()
+
+  expect(searchTarget).toContain('https://www.google.com/search?q=')
+  expect(searchTarget).toContain(encodeURIComponent('This is a test sentence'))
+
+  const toolbar = await page.$('.ssh-toolbar-root')
+  expect(toolbar).toBeNull()
+
+  await popup.close()
+  await page.close()
+})
+
 test('clicking pen button creates a highlight and dismisses toolbar', async () => {
   const { page } = await setupPage()
   await selectText(page)

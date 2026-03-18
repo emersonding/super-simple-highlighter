@@ -16,12 +16,13 @@
  */
 
 const HIGHLIGHT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M6 26 L24 8" stroke="#3a3a3c" stroke-width="5.5" stroke-linecap="round"/><rect x="3" y="25" width="7" height="4" rx="1" fill="#3a3a3c" transform="rotate(-45 6 26)"/></svg>`
+const GOOGLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 12.23c0-.77-.07-1.51-.2-2.23H12v4.22h5.03a4.3 4.3 0 0 1-1.86 2.82v2.34h3.01c1.76-1.62 2.82-4 2.82-7.15Z" fill="#4285F4"/><path d="M12 21c2.43 0 4.47-.81 5.96-2.2l-3.01-2.34c-.81.54-1.84.86-2.95.86-2.27 0-4.19-1.53-4.88-3.58H4.01v2.41A8.99 8.99 0 0 0 12 21Z" fill="#34A853"/><path d="M7.12 13.74A5.41 5.41 0 0 1 6.84 12c0-.61.1-1.21.28-1.74V7.85H4.01A8.99 8.99 0 0 0 3 12c0 1.45.35 2.82 1.01 4.15l3.11-2.41Z" fill="#FBBC05"/><path d="M12 6.68c1.32 0 2.5.45 3.43 1.34l2.57-2.57C16.47 4.09 14.43 3 12 3 8.49 3 5.45 5.02 4.01 7.85l3.11 2.41c.69-2.05 2.61-3.58 4.88-3.58Z" fill="#EA4335"/></svg>`
 const COMMENT_SVG_16 = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="none"><rect x="3" y="2" width="26" height="21" rx="7" fill="#e5e5ea"/><path d="M10 23 L9 30 L18 23" fill="#e5e5ea"/></svg>`
 const COMMENT_SVG_13 = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 32 32" fill="none"><rect x="3" y="2" width="26" height="21" rx="7" fill="#e5e5ea"/><path d="M10 23 L9 30 L18 23" fill="#e5e5ea"/></svg>`
 
 /**
  * Floating selection toolbar
- * Appears above text selections with pen (highlight) and comment buttons.
+ * Appears above text selections with search, pen (highlight), and comment buttons.
  *
  * @class SelectionToolbar
  */
@@ -78,7 +79,7 @@ class SelectionToolbar {
         transform: translateX(-50%);
       }
       .ssh-toolbar-root * { box-sizing: border-box; }
-      .ssh-toolbar-pen, .ssh-toolbar-comment, .ssh-toolbar-save, .ssh-toolbar-cancel {
+      .ssh-toolbar-search, .ssh-toolbar-pen, .ssh-toolbar-comment, .ssh-toolbar-save, .ssh-toolbar-cancel {
         all: initial;
         cursor: pointer;
         border-radius: 14px;
@@ -90,6 +91,7 @@ class SelectionToolbar {
         font-size: 14px;
         border: none;
       }
+      .ssh-toolbar-search,
       .ssh-toolbar-comment { background: transparent; color: #ccc; }
       .ssh-toolbar-save {
         all: initial;
@@ -195,7 +197,7 @@ class SelectionToolbar {
     this._showIdle(range)
   }
 
-  /** Show State 1: pen + comment buttons */
+  /** Show State 1: search + pen + comment buttons */
   _showIdle(range) {
     this._dismiss()
     this._state = 'idle'
@@ -203,6 +205,17 @@ class SelectionToolbar {
     const rect = range.getBoundingClientRect()
     const toolbar = this.document.createElement('div')
     toolbar.className = 'ssh-toolbar-root'
+
+    // Search button
+    const search = this.document.createElement('button')
+    search.className = 'ssh-toolbar-search'
+    search.title = 'Search Google'
+    search.innerHTML = GOOGLE_SVG
+    search.addEventListener('click', () => this._onSearchClick(range), { once: true })
+
+    // Divider
+    const searchDivider = this.document.createElement('span')
+    searchDivider.className = 'ssh-toolbar-divider'
 
     // Pen button
     const pen = this.document.createElement('button')
@@ -227,7 +240,7 @@ class SelectionToolbar {
     const caret = this.document.createElement('span')
     caret.className = 'ssh-toolbar-caret'
 
-    toolbar.append(pen, divider, comment, caret)
+    toolbar.append(search, searchDivider, pen, divider, comment, caret)
     this._position(toolbar, rect)
     this.document.body.appendChild(toolbar)
     this._toolbarElm = toolbar
@@ -313,6 +326,18 @@ class SelectionToolbar {
       text: text,
       className: this._activeClassName,
     }).catch(console.error)
+    this._dismiss()
+  }
+
+  /** Search click: open Google in a new page for the selected text */
+  _onSearchClick(range) {
+    const text = range.toString().trim()
+    if (!text) {
+      this._dismiss()
+      return
+    }
+
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(text)}`, '_blank', 'noopener')
     this._dismiss()
   }
 
