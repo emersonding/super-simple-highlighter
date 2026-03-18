@@ -184,11 +184,23 @@ class ChromeRuntimeHandler {
 
         if (typeof message.comment === 'string' && message.comment.length > 0) {
           elm.dataset.comment = message.comment
-          // Add dot if not already present
+          // Add icon if not already present
           if (!elm.querySelector(`.${StyleSheetManager.CLASS_NAME.COMMENT_DOT}`)) {
             const dot = this.document.createElement('span')
             dot.classList.add(StyleSheetManager.CLASS_NAME.COMMENT_DOT)
             dot.dataset[ChromeRuntimeHandler.DATA_ATTRIBUTE_NAME.FOREIGN] = ''
+            dot.textContent = '\uD83D\uDCAC'
+            dot.addEventListener('click', (e) => {
+              e.stopPropagation()
+              const markElm = e.currentTarget.closest('[id]')
+              document.dispatchEvent(new CustomEvent('ssh-edit-comment', {
+                detail: {
+                  highlightId: markElm.id,
+                  comment: markElm.dataset.comment || '',
+                  anchorRect: markElm.getBoundingClientRect(),
+                }
+              }))
+            })
             elm.appendChild(dot)
           }
         } else {
@@ -259,10 +271,22 @@ class ChromeRuntimeHandler {
     if (typeof comment === 'string' && comment.length > 0) {
       elms[0].dataset.comment = comment
 
-      // Dot indicator — removed by removeHighlight() via [data-foreign] cleanup
+      // Comment icon — removed by removeHighlight() via [data-foreign] cleanup
       const dot = this.document.createElement('span')
       dot.classList.add(StyleSheetManager.CLASS_NAME.COMMENT_DOT)
       dot.dataset[ChromeRuntimeHandler.DATA_ATTRIBUTE_NAME.FOREIGN] = ''
+      dot.textContent = '\uD83D\uDCAC'
+      dot.addEventListener('click', (e) => {
+        e.stopPropagation()
+        const markElm = e.currentTarget.closest('[id]')
+        document.dispatchEvent(new CustomEvent('ssh-edit-comment', {
+          detail: {
+            highlightId: markElm.id,
+            comment: markElm.dataset.comment || '',
+            anchorRect: markElm.getBoundingClientRect(),
+          }
+        }))
+      })
       elms[0].appendChild(dot)
     }
 

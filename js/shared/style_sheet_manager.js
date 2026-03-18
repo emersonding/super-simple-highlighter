@@ -279,15 +279,13 @@ StyleSheetManager.DECLARATIONS = {
 	COMMENT_DOT: `
 		all: initial;
 		position: absolute;
-		top: -3px;
-		right: -4px;
-		width: 8px;
-		height: 8px;
-		background: #4a90d9;
-		border-radius: 50%;
-		border: 1.5px solid white;
-		pointer-events: none;
+		top: -8px;
+		right: -6px;
+		font-size: 11px;
+		line-height: 1;
+		cursor: pointer;
 		display: inline-block;
+		user-select: none;
 	`,
 
 	CLOSE_HOVER_FOCUS: `

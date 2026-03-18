@@ -46,9 +46,19 @@ test.afterAll(async () => {
   if (server) server.close()
 })
 
+/** Helper: remove all DB highlights for the test page URL to keep tests independent */
+async function cleanupHighlights() {
+  const pageUrl = `http://127.0.0.1:${port}/test-page.html`
+  await sw.evaluate(async (url) => {
+    const db = new DB()
+    await db.removeMatchingDocuments(url).catch(() => {})
+  }, pageUrl)
+}
+
 /** Helper: load test page, inject content scripts, select the target text */
 async function setupPage() {
   const pageUrl = `http://127.0.0.1:${port}/test-page.html`
+  await cleanupHighlights()
   const page = await context.newPage()
   await page.goto(pageUrl)
   await page.waitForLoadState('domcontentloaded')
@@ -56,7 +66,7 @@ async function setupPage() {
   // Ping-then-inject: trigger content script injection by sending a ping via SW
   await sw.evaluate(async (url) => {
     const [tab] = await chrome.tabs.query({ url })
-    if (tab) await new ChromeTabs(tab.id).sendMessage('ping', {}, { ping: false }).catch(() => {})
+    if (tab) await new ChromeTabs(tab.id).sendMessage('ping', {}).catch(() => {})
   }, pageUrl)
 
   // Wait for SelectionToolbar's _resolveActiveClassName() storage read to complete

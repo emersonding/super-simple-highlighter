@@ -45,6 +45,10 @@ class SelectionToolbar {
     this._injectStyles()
     this._resolveActiveClassName()
     this.document.addEventListener('mouseup', this._onMouseUpBound, { passive: true })
+    this.document.addEventListener('ssh-edit-comment', (e) => {
+      const { highlightId, comment, anchorRect } = e.detail
+      this._showCommentEditor(highlightId, anchorRect, comment)
+    })
     return this
   }
 
@@ -144,11 +148,26 @@ class SelectionToolbar {
 
   /** Load and cache the active highlight class name */
   _resolveActiveClassName() {
-    new ChromeHighlightStorage().getAll().then(({ highlightDefinitions }) => {
-      if (highlightDefinitions && highlightDefinitions.length > 0) {
-        this._activeClassName = highlightDefinitions[0].className
-        this._activeBgColor = (highlightDefinitions[0].style || {})['background-color'] || '#ffffaa'
+    new ChromeHighlightStorage().getAll().then(({ highlightDefinitions, penButtonClassName }) => {
+      if (!highlightDefinitions || highlightDefinitions.length === 0) return
+
+      const ORANGE_CLASS = 'default-orange-da01945e-1964-4d27-8a6c-3331e1fe7f14'
+      let def
+
+      if (penButtonClassName) {
+        def = highlightDefinitions.find(d => d.className === penButtonClassName)
       }
+
+      if (!def) {
+        def = highlightDefinitions.find(d => d.className === ORANGE_CLASS)
+      }
+
+      if (!def) {
+        def = highlightDefinitions[0]
+      }
+
+      this._activeClassName = def.className
+      this._activeBgColor = (def.style || {})['background-color'] || '#ffd2AA'
     }).catch(() => {})
   }
 
@@ -360,6 +379,71 @@ class SelectionToolbar {
   _detachDismissListeners() {
     for (const fn of this._dismissListeners) fn()
     this._dismissListeners = []
+  }
+
+  /** Show comment editor for an existing highlight (click-to-edit 💬) */
+  _showCommentEditor(highlightId, anchorRect, existingComment) {
+    this._dismiss()
+    this._state = 'comment'
+
+    const toolbar = this.document.createElement('div')
+    toolbar.className = 'ssh-toolbar-root'
+
+    const icon = this.document.createElement('span')
+    icon.textContent = '\uD83D\uDCAC'
+    icon.style.cssText = 'font-size:13px'
+
+    const divider = this.document.createElement('span')
+    divider.className = 'ssh-toolbar-divider'
+
+    const input = this.document.createElement('input')
+    input.className = 'ssh-toolbar-input'
+    input.placeholder = 'Edit comment\u2026'
+    input.maxLength = 1000
+    input.type = 'text'
+    input.value = existingComment || ''
+
+    const save = this.document.createElement('button')
+    save.className = 'ssh-toolbar-save'
+    save.textContent = 'Save'
+    save.disabled = input.value === (existingComment || '')
+
+    const cancel = this.document.createElement('button')
+    cancel.className = 'ssh-toolbar-cancel'
+    cancel.textContent = '\u00D7'
+
+    const caret = this.document.createElement('span')
+    caret.className = 'ssh-toolbar-caret'
+
+    input.addEventListener('input', () => {
+      save.disabled = input.value.trim() === (existingComment || '').trim()
+    })
+
+    const doSave = () => {
+      const comment = input.value.trim()
+      ChromeRuntimeHandler.sendMessage({
+        id: ChromeRuntimeHandler.MESSAGE_ID.UPDATE_HIGHLIGHT_COMMENT,
+        highlightId: highlightId,
+        comment: comment,
+      }).catch(console.error)
+      this._dismiss()
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doSave()
+      if (e.key === 'Escape') this._dismiss()
+    })
+    save.addEventListener('click', doSave)
+    cancel.addEventListener('click', () => this._dismiss())
+
+    toolbar.append(icon, divider, input, save, cancel, caret)
+    this._position(toolbar, anchorRect)
+    this.document.body.appendChild(toolbar)
+    this._toolbarElm = toolbar
+
+    this._attachDismissListeners({ skipSelectionChange: true })
+
+    requestAnimationFrame(() => input.focus())
   }
 
   /** Remove toolbar and clean up */
