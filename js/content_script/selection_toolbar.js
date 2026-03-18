@@ -68,11 +68,11 @@ class SelectionToolbar {
         position: fixed;
         z-index: 2147483647;
         background: #2c2c2c;
-        border-radius: 20px;
-        padding: 6px 10px;
+        border-radius: 16px;
+        padding: 3px 6px;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 3px;
         box-shadow: 0 4px 16px rgba(0,0,0,0.35);
         font-family: -apple-system, sans-serif;
         white-space: nowrap;
@@ -81,9 +81,9 @@ class SelectionToolbar {
       .ssh-toolbar-search, .ssh-toolbar-pen, .ssh-toolbar-comment, .ssh-toolbar-save, .ssh-toolbar-cancel {
         all: initial;
         cursor: pointer;
-        border-radius: 14px;
-        width: 30px;
-        height: 30px;
+        border-radius: 11px;
+        width: 26px;
+        height: 26px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -119,7 +119,7 @@ class SelectionToolbar {
         all: initial;
         display: inline-block;
         width: 1px;
-        height: 18px;
+        height: 15px;
         background: #555;
       }
       .ssh-toolbar-input {
@@ -138,14 +138,14 @@ class SelectionToolbar {
         all: initial;
         display: block;
         position: absolute;
-        bottom: -6px;
+        bottom: -5px;
         left: 50%;
         transform: translateX(-50%);
         width: 0;
         height: 0;
-        border-left: 6px solid transparent;
-        border-right: 6px solid transparent;
-        border-top: 6px solid #2c2c2c;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 5px solid #2c2c2c;
       }
     `
     this.document.head.appendChild(style)
