@@ -36,7 +36,7 @@
 				</button>
 
 				<!-- use about controller for its manifest scope property -->
-				<a class="navbar-brand" data-ng-controller="about" ng-href="{{'extension_webstore_url' | i18n}}">
+				<a class="navbar-brand" href="https://github.com/emersonding/super-simple-highlighter" target="_blank">
 					<!-- <img data-ng-src="{{manifest.icons['19']}}" style="margin-right: 1em; vertical-align: bottom"> -->
 					{{manifest.name}}
 					<span style="font-size: small;">{{manifest.version}}</span>
@@ -46,10 +46,6 @@
 
 			<!-- Collect the nav links, forms, and other content for toggling -->
 			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-				<ul class="nav navbar-nav navbar-right">
-					<li><a target="_blank" href="https://www.dexterouslogic.com/assets/supersimplehighlighter/faq.html">{{'faq_title' | i18n}}</a></li>
-					<li><a ng-href="{{'extension_author_url' | i18n}}">&copy;{{'copyright_year' | i18n}} {{ 'extension_author' | i18n }}</a></li>
-				</ul>
 			</div>
 		</div>
 	</nav>
@@ -372,11 +368,8 @@
 					<h1>{{manifest.name}}</h1>
 					<h5>
 						Version {{manifest.version}} 
-						<small><a target="_blank" href="https://www.dexterouslogic.com/assets/supersimplehighlighter/changelog.txt">{{'changelog' | i18n}}</a></small>
+						<small><a target="_blank" href="https://github.com/emersonding/super-simple-highlighter">{{'changelog' | i18n}}</a></small>
 					</h5>
-					<p>
-						<small>&copy;{{'copyright_year' | i18n}}</small> <strong><a ng-href="{{'extension_author_url' | i18n}}">{{ 'extension_author' | i18n }}</a></strong>
-					</p>
 					<h4>{{'libraries' | i18n}}</h4>
 					<ul>
 						<li ng-repeat="library in libraries">
