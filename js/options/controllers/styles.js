@@ -23,6 +23,7 @@ angular.module('stylesControllers', []).controller('styles', ["$scope", function
      * @prop {boolean} unselectAfterHighlight
      * @prop {boolean} enableHighlightBoxShadow
      * @prop {number} highlightBackgroundAlpha
+     * @prop {boolean} enableToolbarColorSelection
      * @memberof Controller
      */
    
@@ -98,6 +99,7 @@ angular.module('stylesControllers', []).controller('styles', ["$scope", function
             ChromeStorage.KEYS.UNSELECT_AFTER_HIGHLIGHT,
             ChromeStorage.KEYS.ENABLE_HIGHLIGHT_BOX_SHADOW,
             ChromeStorage.KEYS.HIGHLIGHT_BACKGROUND_ALPHA,
+            ChromeStorage.KEYS.ENABLE_TOOLBAR_COLOR_SELECTION,
         ])
       }).then(items => {
         this.scope.options = items

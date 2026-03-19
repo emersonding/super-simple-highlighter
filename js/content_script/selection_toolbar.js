@@ -39,6 +39,8 @@ class SelectionToolbar {
     this._activeBgColor = null
     this._state = 'hidden' // 'hidden' | 'idle' | 'comment'
     this._dismissListeners = []
+    this._pickerDefinitions = []
+    this._hoverColorPickerEnabled = true
     this._onMouseUpBound = this._onMouseUp.bind(this)
   }
 
@@ -49,6 +51,18 @@ class SelectionToolbar {
   init() {
     this._injectStyles()
     this._resolveActiveClassName()
+
+    // Read hover-picker enabled flag once; refresh via storage change listener
+    new ChromeStorage().get(ChromeStorage.KEYS.ENABLE_TOOLBAR_COLOR_SELECTION)
+      .then(enabled => { this._hoverColorPickerEnabled = enabled })
+      .catch(() => {})
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'sync' && changes[ChromeStorage.KEYS.ENABLE_TOOLBAR_COLOR_SELECTION]) {
+        this._hoverColorPickerEnabled = changes[ChromeStorage.KEYS.ENABLE_TOOLBAR_COLOR_SELECTION].newValue
+      }
+    })
+
     this.document.addEventListener('mouseup', this._onMouseUpBound, { passive: true })
     this.document.addEventListener('ssh-edit-comment', (e) => {
       const { highlightId, comment, anchorRect } = e.detail
@@ -147,6 +161,25 @@ class SelectionToolbar {
         border-right: 5px solid transparent;
         border-top: 5px solid #2c2c2c;
       }
+      .ssh-toolbar-picker {
+        position: absolute;
+        bottom: 100%;
+        left: 0;
+        width: 26px;
+        height: 26px;
+        background: #2c2c2c;
+        border-radius: 8px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px;
+        padding: 3px;
+        z-index: 1;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.4);
+      }
+      .ssh-toolbar-picker-swatch {
+        border-radius: 3px;
+        cursor: pointer;
+      }
     `
     this.document.head.appendChild(style)
   }
@@ -173,6 +206,7 @@ class SelectionToolbar {
 
       this._activeClassName = def.className
       this._activeBgColor = (def.style || {})['background-color'] || '#ffd2AA'
+      this._pickerDefinitions = (highlightDefinitions || []).slice(0, 4)
     }).catch(() => {})
   }
 
@@ -223,7 +257,6 @@ class SelectionToolbar {
     pen.title = 'Highlight'
     pen.innerHTML = HIGHLIGHT_SVG
     pen.style.background = this._activeBgColor || '#ffffaa'
-    pen.addEventListener('click', () => this._onPenClick(range), { once: true })
 
     // Divider
     const divider = this.document.createElement('span')
@@ -234,13 +267,22 @@ class SelectionToolbar {
     comment.className = 'ssh-toolbar-comment'
     comment.title = 'Comment & Highlight'
     comment.innerHTML = COMMENT_SVG_16
-    comment.addEventListener('click', () => this._onCommentClick(range), { once: true })
 
     // Caret
     const caret = this.document.createElement('span')
     caret.className = 'ssh-toolbar-caret'
 
-    toolbar.append(search, searchDivider, pen, divider, comment, caret)
+    if (this._hoverColorPickerEnabled && this._pickerDefinitions.length > 0) {
+      const penWrapper = this._createHoverZone(pen, range, 'pen')
+      const commentWrapper = this._createHoverZone(comment, range, 'comment')
+      // NOTE: do NOT attach click listeners directly on pen/comment here —
+      // _createHoverZone handles all click wiring for those buttons.
+      toolbar.append(search, searchDivider, penWrapper, divider, commentWrapper, caret)
+    } else {
+      pen.addEventListener('click', () => this._onPenClick(range), { once: true })
+      comment.addEventListener('click', () => this._onCommentClick(range), { once: true })
+      toolbar.append(search, searchDivider, pen, divider, comment, caret)
+    }
     this._position(toolbar, rect)
     this._toolbarElm = toolbar
 
@@ -309,6 +351,102 @@ class SelectionToolbar {
     this._attachDismissListeners({ skipSelectionChange: true })
 
     requestAnimationFrame(() => input.focus())
+  }
+
+  _createHoverZone(btn, range, mode) {
+    const wrapper = this.document.createElement('div')
+    wrapper.style.cssText = 'position:relative;width:26px;height:26px;display:inline-flex;'
+
+    btn.addEventListener('click', () => {
+      mode === 'pen' ? this._onPenClick(range) : this._onCommentClick(range)
+    }, { once: true })
+
+    let hoverTimer = null
+    let pickerVisible = false
+    const setVisible = (v) => { pickerVisible = v }
+
+    wrapper.addEventListener('mouseenter', () => {
+      hoverTimer = setTimeout(() => this._showPickerPopup(wrapper, range, mode, setVisible), 500)
+    })
+    wrapper.addEventListener('mouseleave', (e) => {
+      if (!wrapper.contains(e.relatedTarget)) {
+        clearTimeout(hoverTimer)
+        hoverTimer = null
+        if (pickerVisible) this._removePickerPopup(wrapper, setVisible)
+      }
+    })
+
+    wrapper.appendChild(btn)
+    return wrapper
+  }
+
+  _showPickerPopup(wrapper, range, mode, setVisible) {
+    if (wrapper.querySelector('.ssh-toolbar-picker')) return
+
+    const popup = this.document.createElement('div')
+    popup.className = 'ssh-toolbar-picker'
+    // Prevent mousedown from collapsing the text selection. Clicking a <div>
+    // natively causes the browser to collapse the selection, firing
+    // selectionchange → _dismiss() before the click event can fire.
+    // preventDefault() on mousedown suppresses this without blocking click.
+    popup.addEventListener('mousedown', (e) => e.preventDefault())
+
+    for (const def of this._pickerDefinitions) {
+      const swatch = this.document.createElement('div')
+      swatch.className = 'ssh-toolbar-picker-swatch'
+      swatch.style.background = (def.style || {})['background-color'] || '#ccc'
+      if (def.className === this._activeClassName) {
+        swatch.style.outline = '1.5px solid #fff'
+      }
+      swatch.addEventListener('click', (e) => {
+        e.stopPropagation()
+        this._onPickerSwatchClick(def, range, mode)
+      }, { once: true })
+      popup.appendChild(swatch)
+    }
+
+    wrapper.appendChild(popup)
+    setVisible(true)
+  }
+
+  _onPickerSwatchClick(def, range, mode) {
+    if (mode === 'pen') {
+      if (!def.className) { this._dismiss(); return }
+      this._activeClassName = def.className
+      this._activeBgColor = (def.style || {})['background-color'] || '#ffd2AA'
+
+      // Persist new pen default, then highlight and dismiss.
+      // Awaiting setPenButtonClassName ensures _resolveActiveClassName() triggered
+      // by _dismiss() reads the updated value — avoiding a stale-read race.
+      new ChromeHighlightStorage().setPenButtonClassName(def.className).then(() => {
+        ChromeRuntimeHandler.sendMessage({
+          id: ChromeRuntimeHandler.MESSAGE_ID.CREATE_HIGHLIGHT_FROM_PAGE,
+          xrange: RangeUtils.toObject(range),
+          text: range.toString(),
+          className: def.className,
+        }).catch(console.error)
+        this._dismiss()
+      }).catch(console.error)
+
+    } else if (mode === 'comment') {
+      ChromeRuntimeHandler.sendMessage({
+        id: ChromeRuntimeHandler.MESSAGE_ID.CREATE_HIGHLIGHT_FROM_PAGE,
+        xrange: RangeUtils.toObject(range),
+        text: range.toString(),
+        className: def.className,
+      }).then(highlightId => {
+        if (highlightId) this._showCommentInput(highlightId)
+        else this._dismiss()
+      }).catch(() => this._dismiss())
+    } else {
+      this._dismiss()
+    }
+  }
+
+  _removePickerPopup(wrapper, setVisible) {
+    const popup = wrapper.querySelector('.ssh-toolbar-picker')
+    if (popup) popup.remove()
+    setVisible(false)
   }
 
   /** Pen click: highlight with active style */
