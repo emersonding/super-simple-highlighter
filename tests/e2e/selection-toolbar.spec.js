@@ -374,6 +374,31 @@ test('color picker shows 4 swatches matching first 4 highlight definitions', asy
   await page.close()
 })
 
+test('picker popup prevents mousedown default to preserve text selection', async () => {
+  // Regression: clicking a <div> swatch natively collapses the browser selection,
+  // firing selectionchange → _dismiss() before the click event fires. The popup
+  // must call e.preventDefault() on mousedown to block this.
+  // Note: Playwright's synthetic page.click() does NOT trigger the browser's
+  // native selection-collapse, so swatch-click tests pass even without this fix.
+  // This test directly verifies that preventDefault() is called on mousedown.
+  const { page } = await setupPage()
+  await selectText(page)
+  await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
+
+  await page.hover('.ssh-toolbar-pen')
+  await page.waitForSelector('.ssh-toolbar-picker', { timeout: 2000 })
+
+  const defaultPrevented = await page.evaluate(() => {
+    const popup = document.querySelector('.ssh-toolbar-picker')
+    const evt = new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+    popup.dispatchEvent(evt)
+    return evt.defaultPrevented
+  })
+  expect(defaultPrevented).toBe(true)
+
+  await page.close()
+})
+
 test('clicking first swatch in pen picker creates a highlight and dismisses toolbar', async () => {
   const { page } = await setupPage()
   await selectText(page)

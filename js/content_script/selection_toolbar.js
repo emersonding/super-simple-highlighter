@@ -385,6 +385,11 @@ class SelectionToolbar {
 
     const popup = this.document.createElement('div')
     popup.className = 'ssh-toolbar-picker'
+    // Prevent mousedown from collapsing the text selection. Clicking a <div>
+    // natively causes the browser to collapse the selection, firing
+    // selectionchange → _dismiss() before the click event can fire.
+    // preventDefault() on mousedown suppresses this without blocking click.
+    popup.addEventListener('mousedown', (e) => e.preventDefault())
 
     for (const def of this._pickerDefinitions) {
       const swatch = this.document.createElement('div')
