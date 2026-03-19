@@ -324,3 +324,18 @@ test('commented highlight dot and tooltip restored after page reload', async () 
   expect(dot).toBeTruthy()
   await page.close()
 })
+
+test('options page has hover color picker toggle in Comment setting panel', async () => {
+  const extId = new URL(sw.url()).hostname
+  const optionsPage = await context.newPage()
+  await optionsPage.goto(`chrome-extension://${extId}/options.html`)
+  await optionsPage.waitForLoadState('domcontentloaded')
+  await optionsPage.waitForTimeout(500) // let Angular render
+
+  // The Styles tab is active by default — Comment setting panel is visible
+  const checkbox = await optionsPage.$('input[ng-model="options.enableToolbarColorSelection"]')
+  expect(checkbox).toBeTruthy()
+  expect(await checkbox.isChecked()).toBe(true) // default is true
+
+  await optionsPage.close()
+})
