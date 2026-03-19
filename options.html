@@ -36,7 +36,7 @@
 				</button>
 
 				<!-- use about controller for its manifest scope property -->
-				<a class="navbar-brand" data-ng-controller="about" ng-href="{{'extension_webstore_url' | i18n}}">
+				<a class="navbar-brand" href="https://github.com/emersonding/super-simple-highlighter" target="_blank">
 					<!-- <img data-ng-src="{{manifest.icons['19']}}" style="margin-right: 1em; vertical-align: bottom"> -->
 					{{manifest.name}}
 					<span style="font-size: small;">{{manifest.version}}</span>
@@ -46,10 +46,6 @@
 
 			<!-- Collect the nav links, forms, and other content for toggling -->
 			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-				<ul class="nav navbar-nav navbar-right">
-					<li><a target="_blank" href="https://www.dexterouslogic.com/assets/supersimplehighlighter/faq.html">{{'faq_title' | i18n}}</a></li>
-					<li><a ng-href="{{'extension_author_url' | i18n}}">&copy;{{'copyright_year' | i18n}} {{ 'extension_author' | i18n }}</a></li>
-				</ul>
 			</div>
 		</div>
 	</nav>
@@ -147,73 +143,85 @@
 						</div>
 					</div>
 
-					<!--Highlight Definitions-->
-					<h2>{{ 'options_tab_page_header_sites' | i18n }}</h2>
+					<!-- Panel: Highlight Styles -->
+					<div class="panel panel-default">
+						<div class="panel-heading">{{ 'options_tab_page_header_sites' | i18n }}</div>
+						<div class="panel-body" style="padding-bottom: 8px;">
+							<ul class="list-unstyled" style="display:flex; flex-wrap:wrap; margin-bottom:0;">
+								<li ng-repeat="hd in highlightDefinitions" class="token well-sm {{highlightClassName}} {{hd.className}}"
+								 	ng-click="onClickStyle($index)">
+									<!--title-->
+									<span>{{hd.title}}</span>
+									<!--hotkey-->
+									<kbd class="shortcut" ng-show="{{$index < commands.length && commands[$index].shortcut.length > 0}}">
+										{{ commands[$index].shortcut }}
+									</kbd>
 
-					<ul class="list-unstyled">
-						<li ng-repeat="hd in highlightDefinitions" class="token well-sm {{highlightClassName}} {{hd.className}}"
-						 	ng-click="onClickStyle($index)">
-							<!--Number (index+1)-->
-							<span class="number">{{$index + 1}}</span>
-							<!--title-->
-							<span>{{hd.title}}</span>
-							<!--hotkey-->
-							<kbd class="shortcut" ng-show="{{$index < commands.length && commands[$index].shortcut.length > 0}}">
-								{{ commands[$index].shortcut }}
-							</kbd>
-
-							<!--Delete Button-->
-							<button type="button" class="close" title="Remove Style" ng-click="onClickRemoveStyle(hd)">
-								<span aria-hidden="true">&times;</span>
-								<span class="sr-only">{{'close' | i18n}}</span>
+									<!--Delete Button-->
+									<button type="button" class="close" title="Remove Style" ng-click="onClickRemoveStyle(hd)">
+										<span aria-hidden="true">&times;</span>
+										<span class="sr-only">{{'close' | i18n}}</span>
+									</button>
+								</li>
+							</ul>
+						</div>
+						<div class="panel-footer" style="text-align:right;">
+							<button type="button" class="btn btn-default btn-sm" ng-click="onClickCreateNewStyle()">
+								{{ 'create_new_style' | i18n }}
 							</button>
-						</li>
-					</ul>
-
-					<!--TODO: move to new page-->
-					<div style="margin-top: 20px">
-						<!--Unselect after highlight-->
-						<div class="checkbox">
-							<label>
-								<input type="checkbox" ng-model="options.unselectAfterHighlight">
-								{{ 'highlight_unselect' | i18n }}
-							</label>
-						</div>
-
-						<!--Highlight box shadow enabled-->
-						<div class="checkbox">
-							<label>
-								<input type="checkbox" ng-model="options.enableHighlightBoxShadow">
-								{{ 'highlight_box_shadow' | i18n }}
-							</label>
-						</div>
-
-						<!--Opacity-->
-						<div class="row">
-							<h5>{{ 'highlight_opacity' | i18n }}</h5>
-							<div range-slider min="0.3" max="1.0" model-max="options.highlightBackgroundAlpha" attach-handle-values="true"
-								step="0.1" decimal-places="2" pin-handle="min" filter="alphaPercent"></div>
-						</div>
-
-						<!--Pen button default style-->
-						<div class="row" style="margin-top:10px">
-							<label>Pen button default style:
-								<select ng-model="penButtonClassName" ng-change="onChangePenButtonStyle(penButtonClassName)">
-									<option ng-repeat="hd in highlightDefinitions" value="{{hd.className}}">{{hd.title}}</option>
-								</select>
-							</label>
 						</div>
 					</div>
 
+					<!-- Panel: Options -->
+					<div class="panel panel-default">
+						<div class="panel-heading">Options</div>
+						<div class="panel-body">
+							<!--Unselect after highlight-->
+							<div class="checkbox">
+								<label>
+									<input type="checkbox" ng-model="options.unselectAfterHighlight">
+									{{ 'highlight_unselect' | i18n }}
+								</label>
+							</div>
 
-					<!-- Buttons -->
-					<div class="row">
+							<!--Highlight box shadow enabled-->
+							<div class="checkbox">
+								<label>
+									<input type="checkbox" ng-model="options.enableHighlightBoxShadow">
+									{{ 'highlight_box_shadow' | i18n }}
+								</label>
+							</div>
+
+							<!--Opacity-->
+							<div style="margin-top: 8px;">
+								<label class="control-label" style="display:block; margin-bottom:4px;">{{ 'highlight_opacity' | i18n }}</label>
+								<div range-slider min="0.3" max="1.0" model-max="options.highlightBackgroundAlpha" attach-handle-values="true"
+									step="0.1" decimal-places="2" pin-handle="min" filter="alphaPercent"></div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Panel: Comment Setting -->
+					<div class="panel panel-default">
+						<div class="panel-heading">Comment setting</div>
+						<div class="panel-body">
+							<!--Pen button default style-->
+							<div class="form-group" style="margin-bottom:0;">
+								<label class="control-label" style="font-weight:normal;">Pen button default style:
+									<select class="form-control input-sm" style="display:inline-block; width:auto; margin-left:8px;"
+										ng-model="penButtonClassName" ng-change="onChangePenButtonStyle(penButtonClassName)">
+										<option ng-repeat="hd in highlightDefinitions" value="{{hd.className}}">{{hd.title}}</option>
+									</select>
+								</label>
+							</div>
+						</div>
+					</div>
+
+					<!-- Reset button -->
+					<div class="row" style="margin-top: 8px;">
 						<button type="button" class="btn btn-danger" ng-click="onClickResetToDefaultStyles()">
-                        {{ 'reset_default_styles' | i18n }}
-                    </button>
-						<button type="button" class="btn btn-default pull-right" ng-click="onClickCreateNewStyle()">
-                        {{ 'create_new_style' | i18n }}
-                    </button>
+							{{ 'reset_default_styles' | i18n }}
+						</button>
 					</div>
 				</div>
 
@@ -350,19 +358,30 @@
 								</div>
 							</li>
 
-							<li class="list-group-item">
-								<h5>{{ 'advanced_database_import_title' | i18n }}</h5>
-								<p>{{ 'advanced_database_import_description' | i18n }}</p>
+								<li class="list-group-item">
+									<h5>{{ 'advanced_database_import_title' | i18n }}</h5>
+									<p>{{ 'advanced_database_import_description' | i18n }}</p>
 
-								<div class="row-buttons">
-									<span class="btn btn-danger btn-file">
-							    {{ 'advanced_database_import_button_text' | i18n }}
-									<input type="file" id="files"> 
-									<!-- onchange="angular.element(this).scope().onFilesChange()"> -->
-							</span>
-								</div>
-							</li>
-						</ul>
+									<div class="row-buttons">
+										<label for="files" class="btn btn-default btn-file">
+											{{ 'advanced_database_import_button_text' | i18n }}
+											<input type="file" id="files">
+										</label>
+									</div>
+								</li>
+
+
+							<li class="list-group-item">
+									<h5>Merge</h5>
+									<p>Import highlights from a backup file and merge them with your existing highlights. Duplicate highlights (same page, text, and position) will be skipped.</p>
+									<p class="text-warning"><strong>Warning:</strong> back up your data before merging.</p>
+									<div class="row-buttons">
+										<label for="mergeFiles" class="btn btn-default btn-file">
+											Merge File…
+											<input type="file" id="mergeFiles">
+										</label>
+									</div>
+								</li>
 					</div>
 				</div>
 
@@ -372,11 +391,8 @@
 					<h1>{{manifest.name}}</h1>
 					<h5>
 						Version {{manifest.version}} 
-						<small><a target="_blank" href="https://www.dexterouslogic.com/assets/supersimplehighlighter/changelog.txt">{{'changelog' | i18n}}</a></small>
+						<small><a target="_blank" href="https://github.com/emersonding/super-simple-highlighter">{{'changelog' | i18n}}</a></small>
 					</h5>
-					<p>
-						<small>&copy;{{'copyright_year' | i18n}}</small> <strong><a ng-href="{{'extension_author_url' | i18n}}">{{ 'extension_author' | i18n }}</a></strong>
-					</p>
 					<h4>{{'libraries' | i18n}}</h4>
 					<ul>
 						<li ng-repeat="library in libraries">
@@ -429,6 +445,7 @@
 	<script src="js/options/filters.js"></script>
 	<script src="js/options/controllers/styles.js"></script>
 	<script src="js/options/controllers/bookmarks.js"></script>
+	<script src="js/options/merge_utils.js"></script>
 	<script src="js/options/controllers/advanced.js"></script>
 	<script src="js/options/controllers/about.js"></script>
 </body>
