@@ -382,11 +382,31 @@ class SelectionToolbar {
 
   _showPickerPopup(wrapper, range, mode, setVisible) {
     if (wrapper.querySelector('.ssh-toolbar-picker')) return
-    // TODO: implement in Task 4
+
     const popup = this.document.createElement('div')
     popup.className = 'ssh-toolbar-picker'
+
+    for (const def of this._pickerDefinitions) {
+      const swatch = this.document.createElement('div')
+      swatch.className = 'ssh-toolbar-picker-swatch'
+      swatch.style.background = (def.style || {})['background-color'] || '#ccc'
+      if (def.className === this._activeClassName) {
+        swatch.style.outline = '1.5px solid #fff'
+      }
+      swatch.addEventListener('click', (e) => {
+        e.stopPropagation()
+        this._onPickerSwatchClick(def, range, mode)
+      })
+      popup.appendChild(swatch)
+    }
+
     wrapper.appendChild(popup)
     setVisible(true)
+  }
+
+  _onPickerSwatchClick(def, range, mode) {
+    // TODO: implement in Task 5
+    this._dismiss()
   }
 
   _removePickerPopup(wrapper, setVisible) {

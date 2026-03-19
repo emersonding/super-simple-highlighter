@@ -355,3 +355,21 @@ test('hovering pen button for 600ms shows color picker popup', async () => {
   // Swatch content is verified in Task 4; this test only checks the popup appears
   await page.close()
 })
+
+test('color picker shows 4 swatches matching first 4 highlight definitions', async () => {
+  const { page } = await setupPage()
+  await selectText(page)
+  await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
+
+  await page.hover('.ssh-toolbar-pen')
+  await page.waitForSelector('.ssh-toolbar-picker', { timeout: 2000 })
+
+  const swatches = await page.$$('.ssh-toolbar-picker-swatch')
+  expect(swatches.length).toBe(4)
+
+  // First swatch should be red (#ff8080) — the default first definition
+  const firstBg = await swatches[0].evaluate(el => el.style.background)
+  expect(firstBg.toLowerCase()).toContain('rgb(255, 128, 128)')
+
+  await page.close()
+})
