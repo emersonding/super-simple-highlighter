@@ -204,7 +204,7 @@ test('clicking search button opens Google for the selected text and dismisses to
 })
 
 
-test('toolbar includes AI button between search and highlight actions', async () => {
+test('toolbar includes AI button as the fourth action', async () => {
   const { page } = await setupPage()
   await selectText(page)
   await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
@@ -212,9 +212,9 @@ test('toolbar includes AI button between search and highlight actions', async ()
   const buttonClasses = await page.$$eval('.ssh-toolbar-root button', nodes => nodes.map(node => node.className))
   expect(buttonClasses.slice(0, 4)).toEqual([
     'ssh-toolbar-search',
-    'ssh-toolbar-ai',
     'ssh-toolbar-pen',
     'ssh-toolbar-comment',
+    'ssh-toolbar-ai',
   ])
 
   await page.close()
@@ -222,22 +222,24 @@ test('toolbar includes AI button between search and highlight actions', async ()
 
 test('clicking AI button opens Google AI mode by default and dismisses toolbar', async () => {
   const { page } = await setupPage()
-  let openedUrl = null
-
-  await context.route('https://www.google.com/**', async route => {
-    openedUrl = route.request().url()
-    await route.abort()
+  await sw.evaluate(() => {
+    self.__testOriginalChromeTabsCreate = ChromeTabs.create
+    self.__testOpenedUrls = []
+    ChromeTabs.create = (properties) => {
+      self.__testOpenedUrls.push(properties.url)
+      return Promise.resolve({ id: 999, url: properties.url })
+    }
   })
 
   await selectText(page)
   await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
 
-  const newPagePromise = context.waitForEvent('page')
   await page.click('.ssh-toolbar-ai')
-  const aiPage = await newPagePromise
-  await aiPage.waitForLoadState('load').catch(() => {})
 
-  const aiUrl = new URL(openedUrl)
+  await expect.poll(async () => {
+    return await sw.evaluate(() => self.__testOpenedUrls[0] || null)
+  }).not.toBeNull()
+  const aiUrl = new URL(await sw.evaluate(() => self.__testOpenedUrls[0]))
   expect(`${aiUrl.origin}${aiUrl.pathname}`).toBe('https://www.google.com/search')
   expect(aiUrl.searchParams.get('q')).toBe('This is a test sentence')
   expect(aiUrl.searchParams.get('udm')).toBe('50')
@@ -245,8 +247,11 @@ test('clicking AI button opens Google AI mode by default and dismisses toolbar',
   const toolbar = await page.$('.ssh-toolbar-root')
   expect(toolbar).toBeNull()
 
-  await aiPage.close()
-  await context.unroute('https://www.google.com/**')
+  await sw.evaluate(() => {
+    ChromeTabs.create = self.__testOriginalChromeTabsCreate
+    delete self.__testOriginalChromeTabsCreate
+    delete self.__testOpenedUrls
+  })
   await page.close()
 })
 

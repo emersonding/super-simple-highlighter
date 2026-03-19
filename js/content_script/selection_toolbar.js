@@ -253,9 +253,6 @@ class SelectionToolbar {
     ai.innerHTML = AI_SVG
     ai.addEventListener('click', () => this._onAIClick(range), { once: true })
 
-    const aiDivider = this.document.createElement('span')
-    aiDivider.className = 'ssh-toolbar-divider'
-
     const pen = this.document.createElement('button')
     pen.className = 'ssh-toolbar-pen'
     pen.title = 'Highlight'
@@ -270,17 +267,20 @@ class SelectionToolbar {
     comment.title = 'Comment & Highlight'
     comment.innerHTML = COMMENT_SVG_16
 
+    const aiDivider = this.document.createElement('span')
+    aiDivider.className = 'ssh-toolbar-divider'
+
     const caret = this.document.createElement('span')
     caret.className = 'ssh-toolbar-caret'
 
     if (this._hoverColorPickerEnabled && this._pickerDefinitions.length > 0) {
       const penWrapper = this._createHoverZone(pen, range, 'pen')
       const commentWrapper = this._createHoverZone(comment, range, 'comment')
-      toolbar.append(search, searchDivider, ai, aiDivider, penWrapper, divider, commentWrapper, caret)
+      toolbar.append(search, searchDivider, penWrapper, divider, commentWrapper, aiDivider, ai, caret)
     } else {
       pen.addEventListener('click', () => this._onPenClick(range), { once: true })
       comment.addEventListener('click', () => this._onCommentClick(range), { once: true })
-      toolbar.append(search, searchDivider, ai, aiDivider, pen, divider, comment, caret)
+      toolbar.append(search, searchDivider, pen, divider, comment, aiDivider, ai, caret)
     }
     this._position(toolbar, rect)
     this._toolbarElm = toolbar
