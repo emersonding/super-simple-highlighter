@@ -373,3 +373,44 @@ test('color picker shows 4 swatches matching first 4 highlight definitions', asy
 
   await page.close()
 })
+
+test('clicking first swatch in pen picker creates a highlight and dismisses toolbar', async () => {
+  const { page } = await setupPage()
+  await selectText(page)
+  await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
+
+  await page.hover('.ssh-toolbar-pen')
+  await page.waitForSelector('.ssh-toolbar-picker', { timeout: 2000 })
+
+  // Click the first swatch (red by default)
+  await page.click('.ssh-toolbar-picker-swatch:first-child')
+
+  // Highlight should appear
+  await page.waitForSelector('mark', { timeout: 3000 })
+
+  // Toolbar should be gone
+  const toolbar = await page.$('.ssh-toolbar-root')
+  expect(toolbar).toBeNull()
+
+  await page.close()
+})
+
+test('clicking first swatch in comment picker creates highlight and opens comment input', async () => {
+  const { page } = await setupPage()
+  await selectText(page)
+  await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
+
+  await page.hover('.ssh-toolbar-comment')
+  await page.waitForSelector('.ssh-toolbar-picker', { timeout: 2000 })
+
+  await page.click('.ssh-toolbar-picker-swatch:first-child')
+
+  // Comment input should appear
+  const input = await page.waitForSelector('.ssh-toolbar-input', { timeout: 3000 })
+  expect(input).toBeTruthy()
+
+  // A mark (highlight) should exist
+  await page.waitForSelector('mark', { timeout: 3000 })
+
+  await page.close()
+})

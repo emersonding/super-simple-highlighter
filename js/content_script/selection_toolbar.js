@@ -405,8 +405,34 @@ class SelectionToolbar {
   }
 
   _onPickerSwatchClick(def, range, mode) {
-    // TODO: implement in Task 5
-    this._dismiss()
+    if (mode === 'pen') {
+      this._activeClassName = def.className
+      this._activeBgColor = (def.style || {})['background-color'] || '#ffd2AA'
+
+      // Persist new pen default, then highlight and dismiss.
+      // Awaiting setPenButtonClassName ensures _resolveActiveClassName() triggered
+      // by _dismiss() reads the updated value — avoiding a stale-read race.
+      new ChromeHighlightStorage().setPenButtonClassName(def.className).then(() => {
+        ChromeRuntimeHandler.sendMessage({
+          id: ChromeRuntimeHandler.MESSAGE_ID.CREATE_HIGHLIGHT_FROM_PAGE,
+          xrange: RangeUtils.toObject(range),
+          text: range.toString(),
+          className: def.className,
+        }).catch(console.error)
+        this._dismiss()
+      }).catch(console.error)
+
+    } else if (mode === 'comment') {
+      ChromeRuntimeHandler.sendMessage({
+        id: ChromeRuntimeHandler.MESSAGE_ID.CREATE_HIGHLIGHT_FROM_PAGE,
+        xrange: RangeUtils.toObject(range),
+        text: range.toString(),
+        className: def.className,
+      }).then(highlightId => {
+        if (highlightId) this._showCommentInput(highlightId)
+        else this._dismiss()
+      }).catch(() => this._dismiss())
+    }
   }
 
   _removePickerPopup(wrapper, setVisible) {
