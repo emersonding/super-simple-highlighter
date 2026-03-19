@@ -414,3 +414,48 @@ test('clicking first swatch in comment picker creates highlight and opens commen
 
   await page.close()
 })
+
+test('moving mouse off pen button before 500ms does not show picker', async () => {
+  const { page } = await setupPage()
+  await selectText(page)
+  await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
+
+  // Hover briefly then move away quickly (under 500ms)
+  await page.hover('.ssh-toolbar-pen')
+  await page.waitForTimeout(200)
+  await page.mouse.move(0, 0) // move away
+  await page.waitForTimeout(400) // wait past original 500ms mark
+
+  const picker = await page.$('.ssh-toolbar-picker')
+  expect(picker).toBeNull()
+
+  await page.close()
+})
+
+test('hover color picker does not appear when disabled in options', async () => {
+  // Disable the feature via storage
+  await sw.evaluate(async () => {
+    await chrome.storage.sync.set({ enableToolbarColorSelection: false })
+  })
+
+  const { page } = await setupPage()
+  await selectText(page)
+  await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
+
+  await page.hover('.ssh-toolbar-pen')
+  await page.waitForTimeout(700) // past the 500ms delay
+
+  const picker = await page.$('.ssh-toolbar-picker')
+  expect(picker).toBeNull()
+
+  // Direct pen click should still work (falls back to original behavior)
+  await page.click('.ssh-toolbar-pen')
+  await page.waitForSelector('mark', { timeout: 3000 })
+
+  // Re-enable for other tests
+  await sw.evaluate(async () => {
+    await chrome.storage.sync.set({ enableToolbarColorSelection: true })
+  })
+
+  await page.close()
+})
