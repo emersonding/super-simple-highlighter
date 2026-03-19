@@ -33,13 +33,14 @@ class SelectionToolbar {
     this._pickerDefinitions = []
     this._hoverColorPickerEnabled = true
     this._aiProvider = ChromeStorage.DEFAULTS[ChromeStorage.KEYS.AI_PROVIDER]
+    this._toolbarSettingsPromise = Promise.resolve()
     this._onMouseUpBound = this._onMouseUp.bind(this)
   }
 
   init() {
     this._injectStyles()
     this._resolveActiveClassName()
-    this._resolveToolbarSettings()
+    this._toolbarSettingsPromise = this._resolveToolbarSettings()
 
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'sync') return
@@ -173,7 +174,7 @@ class SelectionToolbar {
   }
 
   _resolveToolbarSettings() {
-    new ChromeStorage().get([
+    return new ChromeStorage().get([
       ChromeStorage.KEYS.ENABLE_TOOLBAR_COLOR_SELECTION,
       ChromeStorage.KEYS.AI_PROVIDER,
     ]).then(items => {
@@ -227,7 +228,15 @@ class SelectionToolbar {
     }
 
     const anchor = this._getMouseAnchor(event, range)
-    this._showIdle(range, anchor)
+    this._toolbarSettingsPromise.finally(() => {
+      const currentSelection = this.document.getSelection()
+      if (!currentSelection || currentSelection.isCollapsed || currentSelection.rangeCount === 0) {
+        this._dismiss()
+        return
+      }
+
+      this._showIdle(range, anchor)
+    })
   }
 
   _showIdle(range, anchor) {

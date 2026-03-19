@@ -120,6 +120,10 @@ test('pages tab shows page entry and highlight text after a highlight is created
 
 test('styles tab AI panel allows choosing the toolbar AI target', async () => {
   const extId = sw.url().split('/')[2]
+  await sw.evaluate(async () => {
+    await chrome.storage.sync.set({ aiProvider: 'gemini' })
+  })
+
   const optionsPage = await context.newPage()
   await optionsPage.goto(`chrome-extension://${extId}/options.html`)
   await optionsPage.waitForLoadState('domcontentloaded')
@@ -132,11 +136,12 @@ test('styles tab AI panel allows choosing the toolbar AI target', async () => {
   await aiSelect.selectOption('claude')
   await expect(aiSelect).toHaveValue('claude')
 
-  const storedValue = await sw.evaluate(async () => {
-    const items = await chrome.storage.sync.get(['aiProvider'])
-    return items.aiProvider
-  })
-  expect(storedValue).toBe('claude')
+  await expect.poll(async () => {
+    return await sw.evaluate(async () => {
+      const items = await chrome.storage.sync.get(['aiProvider'])
+      return items.aiProvider
+    })
+  }).toBe('claude')
 
   await optionsPage.close()
 
