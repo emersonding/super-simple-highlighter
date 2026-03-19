@@ -358,31 +358,30 @@
 								</div>
 							</li>
 
+								<li class="list-group-item">
+									<h5>{{ 'advanced_database_import_title' | i18n }}</h5>
+									<p>{{ 'advanced_database_import_description' | i18n }}</p>
+
+									<div class="row-buttons">
+										<label for="files" class="btn btn-default btn-file">
+											{{ 'advanced_database_import_button_text' | i18n }}
+											<input type="file" id="files">
+										</label>
+									</div>
+								</li>
+
+
 							<li class="list-group-item">
-								<h5>{{ 'advanced_database_import_title' | i18n }}</h5>
-								<p>{{ 'advanced_database_import_description' | i18n }}</p>
-
-								<div class="row-buttons">
-									<span class="btn btn-danger btn-file">
-							    {{ 'advanced_database_import_button_text' | i18n }}
-									<input type="file" id="files">
-									<!-- onchange="angular.element(this).scope().onFilesChange()"> -->
-							</span>
-								</div>
-							</li>
-
-
-							<li class="list-group-item">
-								<h5>Merge</h5>
-								<p>Import highlights from a backup file and merge them with your existing highlights. Duplicate highlights (same page, text, and position) will be skipped.</p>
-								<p class="text-warning"><strong>Warning:</strong> back up your data before merging.</p>
-								<div class="row-buttons">
-									<span class="btn btn-default btn-lg btn-file">
-										Merge File…
-										<input type="file" id="mergeFiles">
-									</span>
-								</div>
-							</li>
+									<h5>Merge</h5>
+									<p>Import highlights from a backup file and merge them with your existing highlights. Duplicate highlights (same page, text, and position) will be skipped.</p>
+									<p class="text-warning"><strong>Warning:</strong> back up your data before merging.</p>
+									<div class="row-buttons">
+										<label for="mergeFiles" class="btn btn-default btn-file">
+											Merge File…
+											<input type="file" id="mergeFiles">
+										</label>
+									</div>
+								</li>
 					</div>
 				</div>
 

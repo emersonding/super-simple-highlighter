@@ -78,6 +78,41 @@ test('options page advanced tab displays database storage size', async () => {
   await page.close()
 })
 
+// Verifies export, import, and merge controls use the same visible button styling in the Advanced tab.
+test('options page advanced tab backup controls share button styling', async () => {
+  const extId = sw.url().split('/')[2]
+  const optionsUrl = `chrome-extension://${extId}/options.html`
+
+  const page = await context.newPage()
+  await page.goto(optionsUrl)
+  await page.waitForLoadState('domcontentloaded')
+  await page.click('a[href="#advanced"]')
+
+  const classes = await page.evaluate(() => {
+    const exportButton = document.querySelector('[data-ng-click="onClickExport()"]')
+    const importButton = document.querySelector('label[for="files"]')
+    const mergeButton = document.querySelector('label[for="mergeFiles"]')
+
+    return {
+      export: exportButton && exportButton.className,
+      import: importButton && importButton.className,
+      merge: mergeButton && mergeButton.className,
+    }
+  })
+
+  expect(classes.export).toContain('btn')
+  expect(classes.export).toContain('btn-default')
+  expect(classes.import).toContain('btn')
+  expect(classes.import).toContain('btn-default')
+  expect(classes.import).toContain('btn-file')
+  expect(classes.merge).toContain('btn')
+  expect(classes.merge).toContain('btn-default')
+  expect(classes.merge).toContain('btn-file')
+  expect(classes.merge).not.toContain('btn-lg')
+
+  await page.close()
+})
+
 // Verifies a selected text range is highlighted through the extension flow and restored after a page reload.
 test('highlight creates mark elements and persists after reload', async () => {
   const pageUrl = `http://127.0.0.1:${port}/test-page.html`
