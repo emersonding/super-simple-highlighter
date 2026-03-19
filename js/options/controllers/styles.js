@@ -23,6 +23,7 @@ angular.module('stylesControllers', []).controller('styles', ["$scope", function
      * @prop {boolean} unselectAfterHighlight
      * @prop {boolean} enableHighlightBoxShadow
      * @prop {number} highlightBackgroundAlpha
+     * @prop {boolean} enableToolbarColorSelection
      * @memberof Controller
      */
    
