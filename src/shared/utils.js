@@ -284,7 +284,9 @@ class NodeUtils {
 			if (node.nodeType === Node.ELEMENT_NODE && node.id.length > 0) {
 				// if the node is an element with a unique id within the *document*, it can become the root of the path,
 				// and since we're going from node to document root, we have all we need.
-				if (node.ownerDocument.querySelectorAll(`#${node.id}`).length === 1) {
+				// Use getElementById instead of querySelectorAll to avoid SyntaxError for IDs that are
+				// invalid CSS selectors (e.g. IDs starting with a digit, as used on news.ycombinator.com).
+				if (node.ownerDocument.getElementById(node.id) === node) {
 					// because the first item of the path array is prefixed with '/', this will become 
 					// a double slash (select all elements). But as there's only one result, we can use [1]
 					// eg: //span[@id='something']/div[3]/text()

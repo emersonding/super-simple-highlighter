@@ -16,5 +16,9 @@
 </head>
 <body>
   <p id="target">This is a test sentence for highlighting and positioning the toolbar across multiple wrapped lines.</p>
+  <!-- digit-only ancestor id: regression for sites like HN that use bare numeric IDs -->
+  <div id="47444748">
+    <p id="hn-target">Highlight me inside a digit-id ancestor.</p>
+  </div>
 </body>
 </html>

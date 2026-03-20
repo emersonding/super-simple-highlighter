@@ -579,3 +579,37 @@ test('hover color picker does not appear when disabled in options', async () => 
     })
   }
 })
+
+test('pen button creates highlight when selected text has a digit-only ancestor id (HN regression)', async () => {
+  // Regression: NodeUtils.path() used querySelectorAll(`#${node.id}`) to anchor the XPath.
+  // IDs that start with a digit (e.g. HN's bare item IDs like "47444748") are invalid CSS
+  // selectors, causing querySelectorAll to throw a SyntaxError. The throw propagated out of
+  // _onPenClick() before _dismiss() was called, leaving the toolbar open and creating no highlight.
+  const { page } = await setupPage()
+
+  await page.evaluate(() => {
+    const target = document.getElementById('hn-target')
+    const range = document.createRange()
+    range.setStart(target.firstChild, 0)
+    range.setEnd(target.firstChild, target.firstChild.textContent.length)
+    const sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+
+    const rect = range.getBoundingClientRect()
+    document.dispatchEvent(new MouseEvent('mouseup', {
+      bubbles: true,
+      clientX: Math.round(rect.right),
+      clientY: Math.round(rect.bottom),
+    }))
+  })
+
+  await page.waitForSelector('.ssh-toolbar-root', { timeout: 3000 })
+  await page.click('.ssh-toolbar-pen')
+  await page.waitForSelector('mark', { timeout: 3000 })
+
+  const toolbar = await page.$('.ssh-toolbar-root')
+  expect(toolbar).toBeNull()
+
+  await page.close()
+})
