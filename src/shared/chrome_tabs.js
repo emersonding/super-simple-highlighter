@@ -717,6 +717,7 @@ ChromeTabs.DEFAULT_SCRIPTS = [
   "src/content/chrome_storage_handler.js",
   "src/content/chrome_runtime_handler.js",
   "src/content/selection_toolbar.js",
+  "src/content/chat_panel.js",
   "src/content/main.js",
 ]
 
