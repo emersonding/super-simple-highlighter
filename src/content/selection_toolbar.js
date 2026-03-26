@@ -22,9 +22,10 @@ const COMMENT_SVG_16 = `<svg xmlns="http://www.w3.org/2000/svg" width="16" heigh
 const COMMENT_SVG_13 = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 32 32" fill="none"><rect x="3" y="2" width="26" height="21" rx="7" fill="#e5e5ea"/><path d="M10 23 L9 30 L18 23" fill="#e5e5ea"/></svg>`
 
 class SelectionToolbar {
-  constructor(styleSheetManager, doc = window.document) {
+  constructor(styleSheetManager, doc = window.document, chatPanel = null) {
     this.styleSheetManager = styleSheetManager
     this.document = doc
+    this._chatPanel = chatPanel
     this._toolbarElm = null
     this._activeClassName = null
     this._activeBgColor = null
@@ -32,7 +33,6 @@ class SelectionToolbar {
     this._dismissListeners = []
     this._pickerDefinitions = []
     this._hoverColorPickerEnabled = true
-    this._aiProvider = ChromeStorage.DEFAULTS[ChromeStorage.KEYS.AI_PROVIDER]
     this._toolbarSettingsPromise = Promise.resolve()
     this._onMouseUpBound = this._onMouseUp.bind(this)
   }
@@ -49,9 +49,6 @@ class SelectionToolbar {
         this._hoverColorPickerEnabled = changes[ChromeStorage.KEYS.ENABLE_TOOLBAR_COLOR_SELECTION].newValue
       }
 
-      if (changes[ChromeStorage.KEYS.AI_PROVIDER]) {
-        this._aiProvider = this._normalizeAIProvider(changes[ChromeStorage.KEYS.AI_PROVIDER].newValue)
-      }
     })
 
     this.document.addEventListener('mouseup', this._onMouseUpBound, { passive: true })
@@ -222,15 +219,9 @@ class SelectionToolbar {
   _resolveToolbarSettings() {
     return new ChromeStorage().get([
       ChromeStorage.KEYS.ENABLE_TOOLBAR_COLOR_SELECTION,
-      ChromeStorage.KEYS.AI_PROVIDER,
     ]).then(items => {
       this._hoverColorPickerEnabled = items[ChromeStorage.KEYS.ENABLE_TOOLBAR_COLOR_SELECTION]
-      this._aiProvider = this._normalizeAIProvider(items[ChromeStorage.KEYS.AI_PROVIDER])
     }).catch(() => {})
-  }
-
-  _normalizeAIProvider(value) {
-    return ['gemini', 'gpt', 'claude'].includes(value) ? value : 'gemini'
   }
 
   _resolveActiveClassName() {
@@ -304,7 +295,7 @@ class SelectionToolbar {
 
     const ai = this.document.createElement('button')
     ai.className = 'ssh-toolbar-ai'
-    ai.title = `Search ${this._getAIProviderLabel()} AI`
+    ai.title = 'Chat with AI'
     ai.innerHTML = AI_SVG
     ai.addEventListener('click', () => this._onAIClick(range), { once: true })
 
@@ -341,27 +332,6 @@ class SelectionToolbar {
     this._toolbarElm = toolbar
 
     this._attachDismissListeners()
-  }
-
-  _getAIProviderLabel() {
-    return {
-      gemini: 'Gemini',
-      gpt: 'ChatGPT',
-      claude: 'Claude',
-    }[this._aiProvider] || 'Gemini'
-  }
-
-  _buildAIUrl(text) {
-    const encodedText = encodeURIComponent(text)
-    switch (this._aiProvider) {
-      case 'gpt':
-        return `https://chatgpt.com/?q=${encodedText}`
-      case 'claude':
-        return `https://claude.ai/new?q=${encodedText}`
-      case 'gemini':
-      default:
-        return `https://www.google.com/search?q=${encodedText}&udm=50`
-    }
   }
 
   /** Expand toolbar to State 2: comment input */
@@ -559,22 +529,13 @@ class SelectionToolbar {
     }).catch(console.error)
   }
 
-  /** AI click: open the configured AI provider for the selected text */
+  /** AI click: open the chat panel with selected text as context */
   _onAIClick(range) {
     const text = range.toString().trim()
-    if (!text) {
-      this._dismiss()
-      return
+    this._dismiss()
+    if (this._chatPanel) {
+      this._chatPanel.open(text || undefined)
     }
-
-    ChromeRuntimeHandler.sendMessage({
-      id: ChromeRuntimeHandler.MESSAGE_ID.OPEN_URL,
-      url: this._buildAIUrl(text),
-    }).then(opened => {
-      if (opened) {
-        this._dismiss()
-      }
-    }).catch(console.error)
   }
 
   /** Comment click: highlight immediately, then expand to comment input */
