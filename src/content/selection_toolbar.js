@@ -169,6 +169,52 @@ class SelectionToolbar {
         border-radius: 3px;
         cursor: pointer;
       }
+      .ssh-highlight-popup {
+        all: initial;
+        position: fixed;
+        z-index: 2147483647;
+        background: #2c2c2c;
+        border-radius: 16px;
+        padding: 3px 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+        font-family: -apple-system, sans-serif;
+        white-space: nowrap;
+      }
+      .ssh-highlight-popup-btn {
+        all: initial;
+        cursor: pointer;
+        border-radius: 11px;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+      }
+      .ssh-highlight-popup-divider {
+        all: initial;
+        display: inline-block;
+        width: 1px;
+        height: 15px;
+        background: #555;
+      }
+      .ssh-highlight-popup-caret {
+        all: initial;
+        display: block;
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 5px solid #2c2c2c;
+      }
     `
     this.document.head.appendChild(style)
   }
